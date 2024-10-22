@@ -45,6 +45,12 @@ class Scene:
         elif os.path.exists(os.path.join(args.source_path, "transforms_train.json")):
             print("Found transforms_train.json file, assuming Blender data set!")
             scene_info = sceneLoadTypeCallbacks["Blender"](args.source_path, args.white_background, args.eval)
+        # check if the file colored_pointcloud.ply exists
+        elif os.path.exists(os.path.join(args.source_path, "cameras.sfm")):
+            print("Found cameras.sfm file, assuming colored point cloud data set!")
+            # assert that there is a file called pointcloud.ply in the directory
+            assert os.path.exists(os.path.join(args.source_path, args.ply_path)), "Could not find pointcloud.ply file in the directory"
+            scene_info = sceneLoadTypeCallbacks["Meshroom"](args.source_path, args.images, args.ply_path, args.eval)
         else:
             assert False, "Could not recognize scene type!"
 
@@ -86,8 +92,8 @@ class Scene:
         point_cloud_path = os.path.join(self.model_path, "point_cloud/iteration_{}".format(iteration))
         self.gaussians.save_ply(os.path.join(point_cloud_path, "point_cloud.ply"))
 
-    def getTrainCameras(self, scale=1.0):
+    def getTrainCameras(self, scale=4.0):
         return self.train_cameras[scale]
 
-    def getTestCameras(self, scale=1.0):
+    def getTestCameras(self, scale=4.0):
         return self.test_cameras[scale]
